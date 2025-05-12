@@ -3,25 +3,72 @@ import com.boleto.model.*;
 
 public class BoletoBuilder {
     private Boleto boleto;
+    protected char moeda = '9';
+    private BoletoBuilder builder;
+
+    public BoletoBuilder() {
+        this.boleto = new Boleto();
+        switch (this.boleto.getBancoInfo().getCodigoBanco()){
+            case "001":
+                this.builder = new BancoDoBrasilBuilder("8");
+                break;
+
+            case "341":
+                this.builder = new ItauBuilder("7");
+                break;
+
+            case "237":
+                this.builder = new BradescoBuilder("5");
+                break;
+        }
+    }
 
     public void reset() {
         this.boleto = new Boleto();
     }
 
-    public void setBeneficiario(Beneficiario beneficiario) {
+    public void buildBeneficiario(Beneficiario beneficiario) {
         boleto.setBeneficiario(beneficiario);
     }
 
-    public void setSacado(Sacado sacado) {
+    public void buildSacado(Sacado sacado) {
         boleto.setSacado(sacado);
     }
 
-    public void setTitulo(Titulo titulo) {
+    public void buildTitulo(Titulo titulo) {
         boleto.setTitulo(titulo);
+    }
+
+    public Titulo getTitulo() {
+        return boleto.getTitulo();
     }
 
     public void setBancoInfo(BancoInfo info) {
         boleto.setBancoInfo(info);
+    }
+
+    public BancoInfo getBancoInfo() {
+        return this.boleto.getBancoInfo();
+    }
+
+    public void buildContaCorrente(String contaCorrente) {
+        boleto.getBancoInfo().setContaCorrente(contaCorrente);
+    }
+
+    public void buildAgencia(String agencia) {
+        boleto.getBancoInfo().setAgencia(agencia);
+    }
+
+    public void buildNossoNumero(String nossoNumero) {
+        boleto.getBancoInfo().setNossoNumero(nossoNumero);
+    }
+
+    public void buildConvenioBB(String convenioBB) {
+        boleto.getBancoInfo().setConvenioBB(convenioBB);
+    }
+
+    public void buildDacItau(String dacItau) {
+        boleto.getBancoInfo().setDacItau(dacItau);
     }
 
     public void buildLinhaDigitavel() {};
@@ -48,8 +95,8 @@ public class BoletoBuilder {
         int c = 0;
         for (int i = 0; i < numero.length(); i++) {
             sum += pesos[i] * Character.getNumericValue(numero.charAt(i));
-            if(i == 9) c = 0;
             c++;
+            if(i >= 9) c = 0;
         }
 
         int valor = sum % 11;
