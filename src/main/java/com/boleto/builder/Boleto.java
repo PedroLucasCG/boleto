@@ -2,6 +2,8 @@ package com.boleto.builder;
 
 import com.boleto.model.*;
 
+import java.math.BigDecimal;
+
 public class Boleto {
     private Beneficiario beneficiario;
     private Sacado sacado;
@@ -9,6 +11,18 @@ public class Boleto {
     private BancoInfo bancoInfo;
     private String linhaDigitavel;
     private String codigoBarras;
+
+    public Boleto(String nome,
+                  String cnpjCpf,
+                  String Endereco,
+                  String numeroDocumento,
+                  String dataVencimento,
+                  BigDecimal valor) {
+
+        this.beneficiario = new Beneficiario(nome, cnpjCpf, Endereco);
+        this.sacado = new Sacado(nome, cnpjCpf, Endereco);
+        this.titulo = new Titulo(numeroDocumento, dataVencimento, valor);
+    }
 
     public void printBoleto() {}
 

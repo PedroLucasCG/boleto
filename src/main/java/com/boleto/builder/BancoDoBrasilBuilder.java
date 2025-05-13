@@ -3,9 +3,10 @@ package com.boleto.builder;
 import com.boleto.model.BancoInfo;
 
 public class BancoDoBrasilBuilder extends BoletoBuilder{
-
-    public BancoDoBrasilBuilder(String digitoConta) {
-        setBancoInfo(new BancoInfo("001", "Banco do Brasil S.A.", "18", digitoConta));
+    Boleto boleto;
+    public BancoDoBrasilBuilder(Boleto boleto, String digitoConta) {
+        boleto.setBancoInfo(new BancoInfo("001", "Banco do Brasil S.A.", "18", digitoConta));
+        this.boleto = boleto;
     }
 
     @Override
@@ -14,9 +15,9 @@ public class BancoDoBrasilBuilder extends BoletoBuilder{
         int sum = 0;
         int c = 0;
         for (int i = 0; i < numero.length(); i++) {
-            sum += pesos[i] * Character.getNumericValue(numero.charAt(i));
+            sum += pesos[c] * Character.getNumericValue(numero.charAt(i));
             c++;
-            if(i >= 9) c = 0;
+            if(i >= 7) c = 0;
         }
 
         int valor = sum % 11;
@@ -27,8 +28,8 @@ public class BancoDoBrasilBuilder extends BoletoBuilder{
     }
 
     @Override
-    public void buildLinhaDigitavel() {
-        String bc = getBoleto().getCodigoBarras();
+    public String getLinhaDigitavel() {
+        String bc = this.boleto.getCodigoBarras();
 
         String campo1 = bc.substring(0, 4) + bc.substring(19, 24);
         campo1 += mod10(campo1);
@@ -46,24 +47,24 @@ public class BancoDoBrasilBuilder extends BoletoBuilder{
                 campo4, campo5
         );
 
-        getBoleto().setLinhaDigitavel(linha);
+        return linha;
     }
 
     @Override
-    public void buildCodigoBarras() {
-        String codigoBanco = getBancoInfo().getCodigoBanco();
+    public String getCodigoBarras() {
+        String codigoBanco = boleto.getBancoInfo().getCodigoBanco();
         char moeda = super.moeda;
-        String vencimento = getTitulo().getDataVencimento();
-        String valor = getTitulo().getValor().toString();
+        String vencimento = boleto.getTitulo().getDataVencimento();
+        String valor = formatValor(boleto.getTitulo().getValor());
 
-        String campoLivre = getBancoInfo().getCarteira()
-                          + getBancoInfo().getNossoNumero()
-                          + getBancoInfo().getDacItau()
-                          + getBancoInfo().getAgencia()
-                          + getBancoInfo().getContaCorrente()
+        String campoLivre = boleto.getBancoInfo().getCarteira()
+                          + boleto.getBancoInfo().getNossoNumero()
+                          + boleto.getBancoInfo().getDacItau()
+                          + boleto.getBancoInfo().getAgencia()
+                          + boleto.getBancoInfo().getContaCorrente()
                           + "0000";
         String parcial = codigoBanco + moeda + vencimento + valor + campoLivre;
         String dv = mod11(parcial);
-        getBoleto().setCodigoBarras(codigoBanco + moeda + dv + vencimento + valor + campoLivre);
+        return codigoBanco + moeda + dv + vencimento + valor + campoLivre;
     }
 }

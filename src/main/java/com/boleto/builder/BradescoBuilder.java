@@ -2,14 +2,18 @@ package com.boleto.builder;
 
 import com.boleto.model.BancoInfo;
 
-public class BradescoBuilder extends BoletoBuilder {
+import java.math.BigDecimal;
 
-    public BradescoBuilder(String digitoConta) {
-        setBancoInfo(new BancoInfo("237", "Banco Bradesco S.A.", "06", digitoConta));
+public class BradescoBuilder extends BoletoBuilder {
+    private Boleto boleto;
+
+    public BradescoBuilder(Boleto boleto, String digitoConta) {
+        boleto.setBancoInfo(new BancoInfo("237", "Banco Bradesco S.A.", "06", digitoConta));
+        this.boleto = boleto;
     }
     @Override
-    public void buildLinhaDigitavel() {
-        String bc = getBoleto().getCodigoBarras();
+    public String getLinhaDigitavel() {
+        String bc = this.boleto.getCodigoBarras();
 
         String campo1 = bc.substring(0, 4) + bc.substring(19, 24);
         campo1 += mod10(campo1);
@@ -29,30 +33,32 @@ public class BradescoBuilder extends BoletoBuilder {
                         campo5
                 );
 
-        getBoleto().setLinhaDigitavel(linha);
+        return linha;
     };
+
     @Override
-    public void buildCodigoBarras() {
-        String codigoBanco = getBancoInfo().getCodigoBanco();
+    public String getCodigoBarras() {
+        String codigoBanco = boleto.getBancoInfo().getCodigoBanco();
         char moeda = super.moeda;
-        String vencimento = getTitulo().getDataVencimento();
-        String valor = getTitulo().getValor().toString();
+        String vencimento = getFatorVencimento(boleto.getTitulo().getDataVencimento());;
+        String valor = formatValor(boleto.getTitulo().getValor());
         String campoLivre = getCampoLivre();
 
         String parcial = codigoBanco + moeda + vencimento + valor + campoLivre;
 
         String dv = mod11(parcial);
 
-        getBoleto().setCodigoBarras(codigoBanco + moeda + dv + vencimento + valor + campoLivre);
+        return codigoBanco + moeda + dv + vencimento + valor + campoLivre;
     }
 
     private String getCampoLivre() {
-        String carteiraPadded = String.format("%03d", Integer.parseInt(getBancoInfo().getCarteira()));
-        String agenciaPadded = String.format("%05d", Integer.parseInt(getBancoInfo().getAgencia()));
-        String contaPadded = String.format("%05d", Integer.parseInt(getBancoInfo().getContaCorrente()));
-        String nossoNumeroPadded = String.format("%011d", Long.parseLong(getBancoInfo().getNossoNumero()));
+        String agencia = String.format("%04d", Integer.parseInt(boleto.getBancoInfo().getAgencia()));
+        String carteira = String.format("%02d", Integer.parseInt(boleto.getBancoInfo().getCarteira()));
+        String nossoNumero = String.format("%010d", Long.parseLong(boleto.getBancoInfo().getNossoNumero()));
+        String contaCorrente = String.format("%07d", Integer.parseInt(boleto.getBancoInfo().getContaCorrente()));
+        String digitoConta = boleto.getBancoInfo().getDigitoConta();
 
-        return carteiraPadded + agenciaPadded + contaPadded + getBancoInfo().getDigitoConta() + nossoNumeroPadded + "0";
+        return agencia + carteira + nossoNumero + contaCorrente + digitoConta;
     }
 
 }

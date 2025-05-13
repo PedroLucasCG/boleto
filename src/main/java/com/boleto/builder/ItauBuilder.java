@@ -3,31 +3,34 @@ package com.boleto.builder;
 import com.boleto.model.BancoInfo;
 
 public class ItauBuilder extends BoletoBuilder{
-
-    public ItauBuilder(String digitoConta) {
-        setBancoInfo(new BancoInfo("341", "Banco Itaú Unibanco S.A.", "109", digitoConta));
+    private Boleto boleto;
+    public ItauBuilder(Boleto boleto, String digitoConta) {
+        boleto.setBancoInfo(new BancoInfo("341", "Banco Itaú Unibanco S.A.", "109", digitoConta));
+        this.boleto = boleto;
     }
 
-    public void buildCodigoBarras() {
-        String codigoBanco = getBancoInfo().getCodigoBanco();
+    @Override
+    public String getCodigoBarras() {
+        String codigoBanco = boleto.getBancoInfo().getCodigoBanco();
         char moeda = super.moeda;
-        String vencimento = getTitulo().getDataVencimento();
-        String valor = getTitulo().getValor().toString();
+        String vencimento = boleto.getTitulo().getDataVencimento();
+        String valor = formatValor(boleto.getTitulo().getValor());
 
-        String campoLivre = getBancoInfo().getConvenioBB()
-                          + getBancoInfo().getNossoNumero()
-                          + getBancoInfo().getAgencia()
-                          + getBancoInfo().getContaCorrente()
-                          + getBancoInfo().getCarteira();
+        String campoLivre = boleto.getBancoInfo().getConvenioBB()
+                          + boleto.getBancoInfo().getNossoNumero()
+                          + boleto.getBancoInfo().getAgencia()
+                          + boleto.getBancoInfo().getContaCorrente()
+                          + boleto.getBancoInfo().getCarteira();
         campoLivre = String.format("%-25s", campoLivre).replace(' ', '0');
 
         String parcial = codigoBanco + moeda + vencimento + valor + campoLivre;
         String dv = mod11(parcial);
-        getBoleto().setLinhaDigitavel(codigoBanco + moeda + dv + vencimento + valor + campoLivre);
+        return codigoBanco + moeda + dv + vencimento + valor + campoLivre;
     }
 
-    public void buildLinhaDigitavel() {
-        String bc = getBoleto().getCodigoBarras();
+    @Override
+    public String getLinhaDigitavel() {
+        String bc = boleto.getCodigoBarras();
 
         String campo1 = bc.substring(0, 4) + bc.substring(19, 24);
         campo1 += mod10(campo1);
@@ -48,6 +51,6 @@ public class ItauBuilder extends BoletoBuilder{
                 campo4, campo5
         );
 
-        getBoleto().setLinhaDigitavel(linha);
+        return linha;
     }
 }
