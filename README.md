@@ -26,8 +26,22 @@ Este projeto tem como objetivo implementar um **gerador de boletos bancários** 
    git clone https://github.com/PedroLucasCG/boleto.git
 Adicione ao pom.xml se estiver usando Maven:
 ```bash
-<dependency>
-    <groupId>com.itextpdf</groupId>
-    <artifactId>itext7-core</artifactId>
-    <version>7.2.0</version>
-</dependency>
+<dependencies>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>8.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>8.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>barcodes</artifactId>
+            <version>8.0.2</version>
+        </dependency>
+    </dependencies>
