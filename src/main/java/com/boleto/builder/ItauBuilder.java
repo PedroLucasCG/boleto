@@ -12,7 +12,7 @@ public class ItauBuilder extends BoletoBuilder{
     @Override
     public String getCodigoBarras() {
         String banco = boleto.getBancoInfo().getCodigoBanco();
-        char moeda = super.moeda; // '9'
+        char moeda = super.moeda;
         String fatorVencimento = getFatorVencimento(boleto.getTitulo().getDataVencimento());
         String valor = formatValor(boleto.getTitulo().getValor());
         String campoLivre = getCampoLivre();
