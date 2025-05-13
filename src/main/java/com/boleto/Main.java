@@ -1,12 +1,7 @@
 package com.boleto;
 
-import com.boleto.builder.Boleto;
-import com.boleto.builder.BoletoBuilder;
-import com.boleto.builder.Director;
-import com.boleto.model.BancoInfo;
-import com.boleto.model.Beneficiario;
-import com.boleto.model.Sacado;
-import com.boleto.model.Titulo;
+import com.boleto.builder.*;
+import com.boleto.model.*;
 import com.itextpdf.barcodes.BarcodeInter25;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.geom.PageSize;
@@ -20,61 +15,51 @@ import com.itextpdf.layout.element.Paragraph;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        // Sample data
-        String nome = "Empresa Exemplo";
-        String cnpjCpf = "12345678000190";
-        String endereco = "Rua Exemplo, 123";
-        String numeroDocumento = "000123";
-        String dataVencimento = "20250520";
-        BigDecimal valor = new BigDecimal("1500.00");
-        String digitoConta = "5";
+        List<String> bancos = List.of("001", "237", "341");
 
-        // Step 1: Instantiate builder
-        BoletoBuilder builder = new BoletoBuilder(
-                nome,
-                cnpjCpf,
-                endereco,
-                numeroDocumento,
-                dataVencimento,
-                valor,
-                digitoConta,
-                "001"
-        );
+        for (String bancoCodigo : bancos) {
+            Beneficiario beneficiario = new Beneficiario("Empresa Exemplo", "12345678000190", "Rua Exemplo, 123");
+            Sacado sacado = new Sacado("Cliente Teste", "98765432100", "Av. Cliente, 456");
+            Titulo titulo = new Titulo("000123", "20250520", new BigDecimal("1500.00"));
 
-        // Step 2: Build remaining parts
-        builder.buildContaCorrente("123456");
-        builder.buildAgencia("4321");
-        builder.buildNossoNumero("87654321");
-        builder.buildConvenioBB("1234567");
-        builder.buildContaCorrente("98765");
+            Director director = new Director(
+                    new BoletoBuilder(
+                            "Empresa Exemplo",
+                            "12345678000190",
+                            "Rua Exemplo, 123",
+                            "000123",
+                            "20250520",
+                            new BigDecimal("1500.00"),
+                            "5",
+                            bancoCodigo
+                    )
+            );
 
-        builder.buildBeneficiario(new Beneficiario("Empresa Exemplo", "12345678000190", "If true this will return abbreviated directions (N, E, etc). Otherwise this will return the"));
-        builder.buildSacado(new Sacado("Cliente Teste", "98765432100", "If true this will return abbreviated directions (N, E, etc). Otherwise this will return the"));
-        builder.buildTitulo(new Titulo(numeroDocumento, dataVencimento, valor));
-        builder.buildCodigoBarras();
-        builder.buildLinhaDigitavel();
+            Boleto boleto = director.buildBoleto(
+                    "4321",
+                    "123456",
+                    "18",
+                    "87654321",
+                    "1234567",
+                    beneficiario,
+                    sacado,
+                    titulo
+            );
 
-        // Step 3: Use Director to finalize boleto
-        Director director = new Director(builder);
-        var boleto = director.constructSimpleBoleto(builder.getBoleto());
+            System.out.println("\nBoleto gerado para banco: " + boleto.getBancoInfo().getCodigoBanco());
+            System.out.println("Código de barras: " + boleto.getCodigoBarras());
+            System.out.println("Linha digitável: " + boleto.getLinhaDigitavel());
 
-        // Step 4: Output result
-        System.out.println("Boleto criado com sucesso:");
-        System.out.println("Nome: " + boleto.getBeneficiario());
-        System.out.println("Documento: " + boleto.getTitulo().getNumeroDocumento());
-        System.out.println("Valor: " + boleto.getTitulo().getValor());
-        System.out.println("Banco: " + boleto.getBancoInfo().getNomeBanco());
-        System.out.println("código de barras: " + boleto.getCodigoBarras());
-        System.out.println("Linha digitável: " + boleto.getLinhaDigitavel());
-
-        generate(boleto, "C:\\Users\\Pedro Lucas\\Repositorios\\Boleto\\boleto\\boleto\\boleto.pdf");
+            String outputPath = "boletos/boleto_" + bancoCodigo + ".pdf";
+            generate(boleto, outputPath);
+        }
     }
 
     public static void generate(Boleto boleto, String outputPath) throws IOException {
-
         File file = new File(outputPath);
         file.getParentFile().mkdirs();
 
@@ -91,7 +76,6 @@ public class Main {
         document.add(new Paragraph("Número do Documento: " + boleto.getTitulo().getNumeroDocumento()));
         document.add(new Paragraph("Linha Digitável: " + boleto.getLinhaDigitavel()));
 
-        // Generate barcode from the codigo de barras
         String codigoBarras = boleto.getCodigoBarras();
         if (codigoBarras != null && codigoBarras.length() == 44) {
             BarcodeInter25 barcode = new BarcodeInter25(pdf);
@@ -108,6 +92,6 @@ public class Main {
         }
 
         document.close();
-        System.out.println("Boleto PDF saved to: " + outputPath);
+        System.out.println("PDF salvo em: " + outputPath);
     }
 }

@@ -40,7 +40,7 @@ public class ItauBuilder extends BoletoBuilder{
             throw new IllegalStateException("Dígito da conta está nulo ou inválido");
         }
 
-        return carteira + nossoNumero + dvNossoNumero + agencia + conta + dvConta + "00";
+        return carteira + nossoNumero + dvNossoNumero + agencia + conta + dvConta + "0";
     }
 
     @Override
