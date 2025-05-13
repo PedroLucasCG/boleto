@@ -54,17 +54,19 @@ public class BancoDoBrasilBuilder extends BoletoBuilder{
     public String getCodigoBarras() {
         String codigoBanco = boleto.getBancoInfo().getCodigoBanco();
         char moeda = super.moeda;
-        String vencimento = boleto.getTitulo().getDataVencimento();
+        String fatorVencimento = getFatorVencimento(boleto.getTitulo().getDataVencimento());
         String valor = formatValor(boleto.getTitulo().getValor());
 
-        String campoLivre = boleto.getBancoInfo().getCarteira()
-                          + boleto.getBancoInfo().getNossoNumero()
-                          + boleto.getBancoInfo().getDacItau()
-                          + boleto.getBancoInfo().getAgencia()
-                          + boleto.getBancoInfo().getContaCorrente()
-                          + "0000";
-        String parcial = codigoBanco + moeda + vencimento + valor + campoLivre;
+        String nossoNumero = String.format("%010d", Long.parseLong(boleto.getBancoInfo().getNossoNumero()));
+        String agencia = String.format("%04d", Integer.parseInt(boleto.getBancoInfo().getAgencia()));
+        String conta = String.format("%08d", Integer.parseInt(boleto.getBancoInfo().getContaCorrente()));
+        String carteira = String.format("%02d", Integer.parseInt(boleto.getBancoInfo().getCarteira()));
+
+        String campoLivre = nossoNumero + agencia + conta + carteira;
+
+        String parcial = codigoBanco + moeda + fatorVencimento + valor + campoLivre;
         String dv = mod11(parcial);
-        return codigoBanco + moeda + dv + vencimento + valor + campoLivre;
+
+        return codigoBanco + moeda + dv + fatorVencimento + valor + campoLivre;
     }
 }

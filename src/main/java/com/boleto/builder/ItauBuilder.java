@@ -11,21 +11,36 @@ public class ItauBuilder extends BoletoBuilder{
 
     @Override
     public String getCodigoBarras() {
-        String codigoBanco = boleto.getBancoInfo().getCodigoBanco();
-        char moeda = super.moeda;
-        String vencimento = boleto.getTitulo().getDataVencimento();
+        String banco = boleto.getBancoInfo().getCodigoBanco();
+        char moeda = super.moeda; // '9'
+        String fatorVencimento = getFatorVencimento(boleto.getTitulo().getDataVencimento());
         String valor = formatValor(boleto.getTitulo().getValor());
+        String campoLivre = getCampoLivre();
 
-        String campoLivre = boleto.getBancoInfo().getConvenioBB()
-                          + boleto.getBancoInfo().getNossoNumero()
-                          + boleto.getBancoInfo().getAgencia()
-                          + boleto.getBancoInfo().getContaCorrente()
-                          + boleto.getBancoInfo().getCarteira();
-        campoLivre = String.format("%-25s", campoLivre).replace(' ', '0');
+        String semDV = banco + moeda + fatorVencimento + valor + campoLivre;
+        String dv = mod11(semDV);
 
-        String parcial = codigoBanco + moeda + vencimento + valor + campoLivre;
-        String dv = mod11(parcial);
-        return codigoBanco + moeda + dv + vencimento + valor + campoLivre;
+        return banco + moeda + dv + fatorVencimento + valor + campoLivre;
+    }
+
+    private String getCampoLivre() {
+        String carteira = String.format("%02d", Integer.parseInt(boleto.getBancoInfo().getCarteira()));
+        String nossoNumero = String.format("%08d", Integer.parseInt(boleto.getBancoInfo().getNossoNumero()));
+        String dvNossoNumero = mod10(nossoNumero);
+
+        if (dvNossoNumero == null || dvNossoNumero.length() != 1) {
+            throw new IllegalStateException("DV do nosso número (dacItau) está nulo ou inválido");
+        }
+
+        String agencia = String.format("%04d", Integer.parseInt(boleto.getBancoInfo().getAgencia()));
+        String conta = String.format("%05d", Integer.parseInt(boleto.getBancoInfo().getContaCorrente()));
+        String dvConta = boleto.getBancoInfo().getDigitoConta();
+
+        if (dvConta == null || dvConta.length() != 1) {
+            throw new IllegalStateException("Dígito da conta está nulo ou inválido");
+        }
+
+        return carteira + nossoNumero + dvNossoNumero + agencia + conta + dvConta + "00";
     }
 
     @Override

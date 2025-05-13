@@ -41,7 +41,7 @@ public class Main {
                 dataVencimento,
                 valor,
                 digitoConta,
-                "237"
+                "001"
         );
 
         // Step 2: Build remaining parts
@@ -49,7 +49,7 @@ public class Main {
         builder.buildAgencia("4321");
         builder.buildNossoNumero("87654321");
         builder.buildConvenioBB("1234567");
-        builder.buildContaCorrente("9876543");
+        builder.buildContaCorrente("98765");
 
         builder.buildBeneficiario(new Beneficiario("Empresa Exemplo", "12345678000190", "If true this will return abbreviated directions (N, E, etc). Otherwise this will return the"));
         builder.buildSacado(new Sacado("Cliente Teste", "98765432100", "If true this will return abbreviated directions (N, E, etc). Otherwise this will return the"));
